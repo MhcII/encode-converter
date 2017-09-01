@@ -70,7 +70,7 @@ class Converter:
             os.mkdir(self.__generate_path)
 
     @staticmethod
-    def start_convert(source_path: str = os.path.join('storage', 'source'), source_encode: str = 'GBK',
+    def start_convert(source_path: str = os.path.join('storage', 'source'), source_encode: str = 'GB18030',
                       generate_path: str = os.path.join('storage', 'encoding_converter_generated'),
                       generate_encode: str = 'UTF-8', include_sub_file: bool = False):
         Converter(source_path, source_encode, generate_path, generate_encode, include_sub_file).convert()
