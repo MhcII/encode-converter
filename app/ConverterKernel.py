@@ -1,5 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.5/bin/python3.5
 # -*- coding: UTF-8 -*-
+import os
 
 
 class ConverterKernel:
@@ -14,7 +15,10 @@ class ConverterKernel:
         self.__generate_encode = generate_encode
 
     def convert(self):
+        print('正在转换 %s' % (os.path.basename(self.__source_path)))
         # 打开写入文件
+        if os.path.exists(self.__generate_path):
+            os.remove(self.__generate_path)
         generate_file = open(file=self.__generate_path, mode='a+', encoding=self.__generate_encode)
         # 打开源文件，循环读入每一行
         try:
