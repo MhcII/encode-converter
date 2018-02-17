@@ -2,58 +2,53 @@
 # -*- coding: UTF-8 -*-
 import os
 
-from app.ConverterKernel import ConverterKernel
+
+def convert(source_path: str = '../storage/source', source_encode: str = 'GB18030',
+            generate_path: str = '../storage/output', generate_encode: str = 'UTF-8', include_sub_file: bool = False):
+    if not os.path.exists(source_path):
+        raise ValueError('无效的路径: "%s"' % source_path)
+    elif os.path.abspath(source_path) == os.path.abspath(generate_path):
+        raise ValueError('源目录和输出目录不能相同')
+    # 如果输出位置是一个文件夹，则删除
+    if os.path.exists(generate_path):
+        if os.path.isfile(generate_path):
+            os.remove(generate_path)
+            os.makedirs(generate_path)
+    else:
+        os.makedirs(generate_path)
+    # 进行转换
+    if os.path.isfile(source_path):
+        __convert_one_file(source_path, source_encode, generate_path, generate_encode)
+    elif os.path.isdir(source_path):
+        __convert_folder(source_path, source_encode, generate_path, generate_encode, include_sub_file)
 
 
-class Converter:
-    """
-    要转换的内容分为如下几种情况
-    [!重要]源地址和目标地址不能相同的，无论是文件还是文件夹
+def __convert_one_file(source_path, source_encode, generate_path, generate_encode):
+    with open(file=generate_path, mode='w', encoding=generate_encode) as generate_file:
+        with open(file=source_path, mode='r', encoding=source_encode) as source_file:
+            for line_text in source_file:
+                # 每读取一行，转码后放入新文件中
+                generate_file.write(line_text)
 
-    如果不指定源格式，源格式则为gbk，如果不指定目标格式，目标格式则为utf-8
-    如果不指定目标文件夹，则为encoding_converter_generated文件夹
-    如果不指定源文件夹，则为source文件夹
 
-    文件
-    直接生成就行啦
-    检测源文件是否存在
-    监测目标文件是否可写
-    文件夹
-    是否 遍历子文件夹
+def __convert_folder(source_path, source_encode, generate_path, generate_encode, include_sub_file):
+    if not os.path.exists(generate_path):
+        os.makedirs(generate_path)
+    # 对子文件转码
+    for file in __find_txt_file(source_path):
+        print('正在转换: %s' % file)
+        __convert_one_file(os.path.join(source_path, file), source_encode, os.path.join(generate_path, file),
+                           generate_encode)
+    # 如果包括子目录，则对子目录也进行转码
+    if include_sub_file:
+        for folder in __find_sub_folder(source_path):
+            __convert_folder(os.path.join(source_path, folder), source_encode, os.path.join(generate_path, folder),
+                             generate_encode, include_sub_file)
 
-    """
 
-    def __init__(self, source_path: str = 'storage/source', source_encode: str = 'GBK',
-                 generate_path: str = 'storage/encoding_converter_generated', generate_encode: str = 'UTF-8',
-                 include_sub_file: bool = False):
-        self.__source_path = source_path
-        self.__source_encode = source_encode
-        self.__generate_path = generate_path
-        self.__generate_encode = generate_encode
-        self.__include_sub_file = include_sub_file
+def __find_txt_file(path):
+    return filter(lambda x: x.endswith('.txt'), os.listdir(path))
 
-    def convert(self):
-        if os.path.isdir(self.__source_path):
-            self.__convert_file()
-        else:
-            self.__convert_folder()
 
-    def __convert_file(self):
-        pass
-        ConverterKernel.start_convert(source_path=self.__source_path, source_encode=self.__source_encode,
-                                      generate_path=self.__generate_path, generate_encode=self.__generate_encode)
-
-    def __convert_folder(self):
-        # 对所有子文件进行转换
-        for filename in os.listdir(self.__source_path):
-            if os.path.isfile(os.path.join(self.__source_path, filename)):
-                # 进行转码
-                # 如果 generate_path 指定了，则把文件名加入 generate_path
-                generate_path = self.__generate_path if (self.__generate_path is None) else os.path.join(
-                    self.__generate_path, filename)
-                ConverterKernel.start_convert(source_path=os.path.join(self.__source_path, filename),
-                                              source_encode=self.__source_encode, generate_path=generate_path,
-                                              generate_encode=self.__generate_encode)
-            else:
-                # 如果还是目录，我可不知道咋整了
-                pass
+def __find_sub_folder(path):
+    return filter(lambda x: os.path.isdir(os.path.join(path, x)), os.listdir(path))
