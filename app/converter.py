@@ -3,22 +3,20 @@
 import os
 
 
-def convert(source_path: str = '../storage/source', source_encode: str = 'GB18030',
-            generate_path: str = '../storage/output', generate_encode: str = 'UTF-8', include_sub_file: bool = False):
+def validate(source_path, generate_path):
     if not os.path.exists(source_path):
         raise ValueError('无效的路径: "%s"' % source_path)
     elif os.path.abspath(source_path) == os.path.abspath(generate_path):
         raise ValueError('源目录和输出目录不能相同')
-    # 如果输出位置是一个文件夹，则删除
-    if os.path.exists(generate_path):
-        if os.path.isfile(generate_path):
-            os.remove(generate_path)
-            os.makedirs(generate_path)
-    else:
-        os.makedirs(generate_path)
+
+
+def convert(source_path: str = '../storage/source', source_encode: str = 'GB18030',
+            generate_path: str = '../storage/output', generate_encode: str = 'UTF-8', include_sub_file: bool = False):
+    validate(source_path, generate_path)
     # 进行转换
     if os.path.isfile(source_path):
-        __convert_one_file(source_path, source_encode, generate_path, generate_encode)
+        __convert_one_file(source_path, source_encode, os.path.join(generate_path, os.path.basename(source_path)),
+                           generate_encode)
     elif os.path.isdir(source_path):
         __convert_folder(source_path, source_encode, generate_path, generate_encode, include_sub_file)
 
@@ -26,9 +24,9 @@ def convert(source_path: str = '../storage/source', source_encode: str = 'GB1803
 def __convert_one_file(source_path, source_encode, generate_path, generate_encode):
     with open(file=generate_path, mode='w', encoding=generate_encode) as generate_file:
         with open(file=source_path, mode='r', encoding=source_encode) as source_file:
-            for line_text in source_file:
+            for line_content in source_file:
                 # 每读取一行，转码后放入新文件中
-                generate_file.write(line_text)
+                generate_file.write(line_content)
 
 
 def __convert_folder(source_path, source_encode, generate_path, generate_encode, include_sub_file):
