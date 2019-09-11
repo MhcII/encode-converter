@@ -1,6 +1,10 @@
 #!/Library/Frameworks/Python.framework/Versions/3.5/bin/python3.5
 # -*- coding: UTF-8 -*-
-from app.converter import convert
+from src.converter import convert
+import sys
 
 if __name__ == "__main__":
-    convert(source_path='storage/source', generate_path='storage/output', include_sub_file=True)
+    source = sys.argv[1] if len(sys.argv) > 1 else None
+    source_encode = sys.argv[2] if len(sys.argv) > 2 else None
+    target_encode = sys.argv[3] if len(sys.argv) > 3 else None
+    convert(source=source, generate='target.txt', source_encode=source_encode, generate_encode=target_encode)
